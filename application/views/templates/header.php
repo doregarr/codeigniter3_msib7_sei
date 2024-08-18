@@ -28,6 +28,7 @@
     <div class="navbar-nav">
       <a class="nav-link " href="<?=base_url();?>proyekcontroller">Proyek  <span class="sr-only">(current)</span></a>
       <a class="nav-link" href="<?=base_url();?>lokasicontroller">Lokasi</a>
+      <a class="nav-link" href="<?=base_url();?>proyeklokasicontroller">Proyek - Lokasi</a>
      
     </div>
   </div></div>
