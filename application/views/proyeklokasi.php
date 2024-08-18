@@ -18,6 +18,9 @@
 <body>
     <div class="container mt-4">
         <h2>Daftar Proyek dan Lokasi</h2>
+        <button type="button" class="btn btn-outline-success mb-3" data-toggle="modal" data-target="#addModal">
+            <i class="bi bi-plus-circle-fill"></i> Tambah Data
+        </button>
         <table class="table mt-4" id="proyekLokasiTable">
             <thead class="thead-dark">
                 <tr>
@@ -63,6 +66,36 @@
                 </div>
                 <div class="modal-footer modal-footer-custom">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding data -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addModalLabel">Tambah Data Proyek dan Lokasi</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm">
+                        <div class="form-group">
+                            <label for="proyekId">ID Proyek</label>
+                            <input type="number" class="form-control" id="proyekId" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lokasiId">ID Lokasi</label>
+                            <input type="number" class="form-control" id="lokasiId" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer modal-footer-custom">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" id="saveBtn" class="btn btn-primary">Save</button>
                 </div>
             </div>
         </div>
@@ -150,16 +183,64 @@
                 });
         }
 
-        document.addEventListener("click", function(event) {
-            if (event.target.matches(".btn-detail")) {
-                const proyekId = event.target.getAttribute("data-proyek-id");
-                const lokasiId = event.target.getAttribute("data-lokasi-id");
-                showModalForDetail(proyekId, lokasiId);
-            }
-        });
+		function addProyekLokasi(proyekId, lokasiId) {
+    fetch("http://localhost:8080/api/proyek-lokasi", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            proyek: { id: proyekId },
+            lokasi: { id: lokasiId }
+        }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            // Jika respons tidak OK, anggap sebagai kesalahan
+            return response.text().then(text => {
+                throw new Error(text); // Lemparkan teks sebagai kesalahan
+            });
+        }
+        return response.json(); // Parsing respons sebagai JSON jika OK
+    })
+    .then(data => {
+        console.log("Raw server response:", data); // Log data yang diterima
+        if (data && typeof data === 'object') {
+            toastr.success('Data berhasil ditambahkan!', 'Success');
+            $('#addModal').modal('hide');
+            fetchProyekLokasiData(); // Memuat ulang data
+        } else {
+            throw new Error('Format respons tidak sesuai');
+        }
+    })
+    .catch(error => {
+        console.error("Error posting data:", error);
+        toastr.error('Gagal menambahkan data! ' + error.message, 'Error');
+    });
+}
 
-        // Fetch initial data when page loads
-        document.addEventListener("DOMContentLoaded", fetchProyekLokasiData);
+
+
+
+document.addEventListener("click", function(event) {
+    if (event.target.matches(".btn-detail")) {
+        const proyekId = event.target.getAttribute("data-proyek-id");
+        const lokasiId = event.target.getAttribute("data-lokasi-id");
+        showModalForDetail(proyekId, lokasiId);
+    } else if (event.target.matches("#saveBtn")) {
+        const proyekId = document.getElementById("proyekId").value;
+        const lokasiId = document.getElementById("lokasiId").value;
+        if (proyekId && lokasiId) {
+            addProyekLokasi(proyekId, lokasiId);
+        } else {
+            toastr.warning('ID Proyek dan ID Lokasi harus diisi!', 'Warning');
+        }
+    }
+});
+
+// Fetch initial data when page loads
+document.addEventListener("DOMContentLoaded", fetchProyekLokasiData);
+
     </script>
 </body>
 </html>
